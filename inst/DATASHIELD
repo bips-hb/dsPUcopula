@@ -1,0 +1,21 @@
+AggregateMethods:
+    generateSyntheticDS=dsPUcopula::generateSyntheticDS
+AssignMethods:
+    preprocessDataDS=dsPUcopula::preprocessDataDS,
+    fitPUcopulaDS=dsPUcopula::fitPUcopulaDS,
+    estimateMarginalsDS=dsPUcopula::estimateMarginalsDS,
+    generateSyntheticDS=dsPUcopula::generateSyntheticDS,
+    save_original_varnamesDS=dsPUcopula::save_original_varnamesDS,
+    save_original_classesDS=dsPUcopula::save_original_classesDS
+Options:
+    default.anonymeter.singlingOut.mode="ci",
+    default.anonymeter.singlingOut.maxRisk=0.15,
+    default.anonymeter.inference.mode="fixed",
+    default.anonymeter.inference.maxRisk=0.15,
+    default.anonymeter.inference.keys="sex age region placesize",
+    default.anonymeter.inference.secrets="",
+	default.dsPUcopula.minimal_bin_size=3
+	
+	
+	
+
