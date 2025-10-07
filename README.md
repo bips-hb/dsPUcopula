@@ -14,7 +14,7 @@ The package is not yet on CRAN. You can install the development version from a
 Git remote (for example GitHub) using:
 
 ```r
-remotes::install_github("your-org/dsPUcopula")
+remotes::install_github("bips-hb/dsPUcopula")
 ```
 
 Once installed on the DataSHIELD server you can set up the required Python
@@ -26,7 +26,7 @@ dsPUcopula::setup_python()
 
 ## Overview of the server workflow
 
-The typical order of operations used by the DataSHIELD driver is:
+The typical order of operations initiated by the DataSHIELD client is:
 
 1. `save_original_varnamesDS()` and `save_original_classesDS()` to capture the
    metadata of the training data set.
