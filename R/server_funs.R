@@ -424,7 +424,7 @@ save_original_classesDS <- function(data_str) {
 
 #' Prepare server-side data prior to copula fitting
 #'
-#' This helper applies a set of disclosure preserving preprocessing steps. It
+#' This helper applies a set of preprocessing steps. It
 #' converts categorical variables into dummy variables, stores the original
 #' levels and renames factor columns so that post-processing can restore the
 #' input structure.
