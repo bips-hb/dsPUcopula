@@ -6,7 +6,7 @@
 \alias{generateSyntheticDS}
 \title{Fit the PU copula and generate synthetic data}
 \description{
-Core DataSHIELD server-side functions that fit the PU copula model, estimate
+Core DataSHIELD server-side functions that fit the Partition-of-Unity copula model, estimate
 marginal distributions and simulate synthetic data together with optional
 privacy scores.
 }
