@@ -26,7 +26,7 @@ dsPUcopula::setup_python()
 
 ## ToDo
 
-- [] Introduce a privacy filter option that can force inference_check = TRUE, singling_out_check = TRUE and inference_check_ignore_na = FALSE in generateSyntheticDS.
+- [ ] Introduce a privacy filter option that can force inference_check = TRUE, singling_out_check = TRUE and inference_check_ignore_na = FALSE in generateSyntheticDS.
 
 ## Overview of the server workflow
 
