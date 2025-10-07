@@ -1,12 +1,12 @@
 Package: dsPUcopula
 Type: Package
-Title: DataSHIELD Server Functions for PU Copula Based Synthesis
+Title: DataSHIELD Server Functions for Partition-of-Unity Copula Based Synthesis
 Version: 0.1.0
 Authors@R: c(
     person(
-      given = "Jane",
-      family = "Doe",
-      email = "jane@example.com",
+      given = "Andreas",
+      family = "Mändle",
+      email = "maendle@leibniz-bips.de",
       role = c("aut", "cre")
     )
   )
