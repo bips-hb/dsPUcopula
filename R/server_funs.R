@@ -322,7 +322,7 @@ fitPUcopulaDS <- function(data_str, driver_strength_factor = 0.5, bin_size = 3, 
     dataTable <- lapply(dataTable, rank_bin_smooth, k = bin_size) |> as.data.frame() |> as.matrix()
     bin_size_list <- NULL
   } else if (is.numeric(bin_size) && length(bin_size) == length(varnames_clean_unique)) {
-    bin_size_list <- as.list(bin_size) |> setNames(varnames_clean_unique)
+    bin_size_list <- as.list(bin_size) |> stats::setNames(varnames_clean_unique)
 
   } else if (is.list(bin_size)) {
     bin_size_list <- bin_size
@@ -358,7 +358,7 @@ fitPUcopulaDS <- function(data_str, driver_strength_factor = 0.5, bin_size = 3, 
   if (is.numeric(driver_strength) && length(driver_strength) == 1) {
     driver_strength <- as.list(driver_strength) # see if below
   } else if (is.numeric(driver_strength) && length(driver_strength) == length(varnames_clean_unique)) {
-    driver_strength_list <- as.list(driver_strength) |> setNames(varnames_clean_unique)
+    driver_strength_list <- as.list(driver_strength) |> stats::setNames(varnames_clean_unique)
   } else if (is.numeric(driver_strength) && length(driver_strength)!=length(varnames_clean_unique) && length(driver_strength) != 1) {
     stop("fitPUcopulaDS: driver_strenght must be of length 1 or of the same length as the number of variables in the original data.frame")
   }
@@ -386,6 +386,31 @@ fitPUcopulaDS <- function(data_str, driver_strength_factor = 0.5, bin_size = 3, 
 
   return(model)
 }
+
+#' Helpers for preserving and restoring server-side metadata
+#'
+#' Functions that capture the original structure of the training data, prepare it
+#' for copula fitting and later restore the factor levels of the synthetic
+#' outputs.
+#'
+#' @param data_str Character name of the data object stored on the DataSHIELD
+#'   server.
+#' @param cat_dummy_levels_str Character name of the metadata object returned by
+#'   \code{preprocessDataDS()}.
+#'
+#' @return
+#' \code{save_original_varnamesDS()} returns a character vector of column names.
+#'
+#' \code{save_original_classesDS()} returns the associated classes.
+#'
+#' \code{preprocessDataDS()} returns a list containing the processed data set and
+#' metadata describing factor levels.
+#'
+#' \code{postprocessDataDS()} returns a \code{data.frame} with factor variables
+#' reconstructed from dummy encodings.
+#'
+#' @name preprocess_helpers
+NULL
 
 #' Capture the original server-side variable names
 #'
@@ -430,7 +455,6 @@ save_original_classesDS <- function(data_str) {
 #' input structure.
 #'
 #' @param data_str Character name of the data object on the server.
-#'
 #' @return A list with the processed data (`data`) and the `original_levels`
 #'   metadata required by [postprocessDataDS()].
 #' @export
@@ -493,7 +517,7 @@ preprocessDataDS <- function(data_str) {
                           sep = "",
                           fullRank = TRUE)
 
-  df.dmy <- data.frame(predict(dmy, newdata = df.catlev))
+  df.dmy <- data.frame(stats::predict(dmy, newdata = df.catlev))
   df.dmy[] <- lapply(df.dmy, function(x) as.factor(as.integer(x)))
 
 
@@ -507,7 +531,7 @@ preprocessDataDS <- function(data_str) {
 #                   sep = "", # not reliable parameter. for factor with levels "0","1" it works, but with levels "e[]?öins"      "z~#...#wößi\"" it is always ""
 #                   fullRank = TRUE)
 #
-#  df.dmy <- data.frame(predict(dmy, newdata = df.cat))
+#  df.dmy <- data.frame(stats::predict(dmy, newdata = df.cat))
 #  df.dmy[] <- lapply(df.dmy, function(x) as.factor(as.integer(x))) # careful when there is somethin else then contr.sum!!! for contr.poly this does not work
 
   #### Remove original selected variables from main data
@@ -582,7 +606,7 @@ postprocessDataDS <- function(data_str , cat_dummy_levels_str) { # data_str
 
   # Select the relevant dummy columns for each varname
   dummy_cols <- lapply( names(cat_dummy_levels), function(x) { names(dataTable)[startsWith(names(dataTable), x)] } )
-  dummy_cols <- setNames(dummy_cols, names(cat_dummy_levels))
+  dummy_cols <- stats::setNames(dummy_cols, names(cat_dummy_levels))
 
   n_dummies <- sapply(dummy_cols, function(x) as.integer(length(x)+1))
 
@@ -602,11 +626,11 @@ postprocessDataDS <- function(data_str , cat_dummy_levels_str) { # data_str
   new_cols <- mapply( function(cols, contrasts) {
     apply(dataTable[, cols, drop = FALSE], 1, function(row) find_closest_cat(as.numeric(row), contrast_tab=contrasts))
   }, dummy_cols, contrast_cat_tab, SIMPLIFY = FALSE) %>%
-    as.data.frame() %>% setNames(names(cat_dummy_levels))
+    as.data.frame() %>% stats::setNames(names(cat_dummy_levels))
 
   new_cols <- mapply( factor , new_cols, cat_levels, SIMPLIFY = FALSE) %>% as.data.frame()
-  newdf <- dataTable %>% select(-all_of(unlist(dummy_cols)))
-  newdf <- newdf %>% bind_cols(new_cols)
+  newdf <- dataTable %>% dplyr::select(-tidyselect::all_of(unlist(dummy_cols)))
+  newdf <- dplyr::bind_cols(newdf, new_cols)
 #  newdf <- lapply(newdf)
   # remove suffixes
   names(newdf) <- gsub("\\.(oriname|cat\\.)$", "", names(newdf))
@@ -626,7 +650,7 @@ check_if_integer <- function(x) {
 #' @noRd
 check_if_binary <- function(x, ignoreNA = TRUE) {
   if (ignoreNA)
-    length(unique(na.omit(x))) == 2
+    length(unique(stats::na.omit(x))) == 2
   else
     length(unique(x)) == 2
 }
@@ -654,9 +678,9 @@ knnsmoother <- function(x, k = 3) {
   ##################################################################
 
   # remove missing values
-  x <- na.omit(x)
+  x <- stats::na.omit(x)
   # standardise
-  x.standardised <- (x-mean(x))/sd(x)
+  x.standardised <- (x-mean(x))/stats::sd(x)
 
   # Calculate the length of the variable after ommitting any NAs
   N.data <- length(x)
@@ -732,7 +756,7 @@ estimateMarginalsDS <- function(data_str, method = "spline", k = 3) {
     dataTable <- lapply(dataTable, function(x, k) if (is.numeric(x)) knnsmoother(x) else x, k = k) #apply(dataTable,2,knnsmoother, k=k)
     k_list <- NULL
   } else if (is.numeric(k) && length(k) == length(varnames_clean_unique)) {
-    k_list <- as.list(k) |> setNames(varnames_clean_unique)
+    k_list <- as.list(k) |> stats::setNames(varnames_clean_unique)
   } else if (is.list(k)) {
     k_list <- k
   } else if (is.numeric(k) && length(k) != length(varnames_clean_unique) && length(k) != 1) {
@@ -1066,8 +1090,8 @@ generateSyntheticDS <- function(n = "n_rSynthetic",
     # validate keys exist in the server-side data
     missing_keys <- setdiff(keys, colnames(df))
     if (length(missing_keys)) {
-      warning(sprintf("Configured key variables not found in '%s': %s",
-                   dataSymbol, paste(missing_keys, collapse=", ")))
+      warning(sprintf("Configured key variables not found: %s",
+                   paste(missing_keys, collapse=", ")))
     }
     if (length(secrets) == 0 || secrets == "") {
       secrets <- setdiff(colnames(df), keys)
@@ -1101,7 +1125,7 @@ generateSyntheticDS <- function(n = "n_rSynthetic",
       inferenceRiskValues <- sapply(inf_risk_list, function(x) x$risk()$value)
       inferenceRiskUCLs <-   sapply(inf_risk_list, function(x) x$risk()$ci[[2]])
       maxInfRisk <- inferenceRiskValues |> which.max() #index of highest risk
-      message(paste0( "highest inference risk estimate for ", names(maxInfRisk),": ",  inferenceRiskValues[maxInfRisk]))
+      message(paste0( "highest inference risk estimate for ", names(inferenceRiskValues)[maxInfRisk],": ",  inferenceRiskValues[maxInfRisk]))
 
       # make this compatible with lists
       attack_rate <- lapply(inf_risk_list, function(x) x$results()$attack_rate) #so_control_risk$results()$attack_rate
@@ -1125,8 +1149,6 @@ generateSyntheticDS <- function(n = "n_rSynthetic",
       if (any(ifnRiskSignificance)) { # attack rate > ucl control
         warning(paste("significant inference risk recognized for", paste0(names(which(ifnRiskSignificance)), collapse=", ")))
       }
-
-    }
   }
 
   if (return_scores) {
