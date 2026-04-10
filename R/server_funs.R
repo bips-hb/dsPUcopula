@@ -250,15 +250,21 @@ rank_bin_smooth <- function(x, k) {
 #   assign("PU_copula_model", model, envir = parent.frame())
 #   return(list(model=model, input=dataTable, class=class(dataTable), length=length(dataTable), dim=dim(dataTable), head=head(dataTable)))
 # }
-#' Fit the PUcopula model on the server side
+#' Fit the PU copula model on the server side
 #'
 #' `fitPUcopulaDS()` is the main server-side entry point used by DataSHIELD to
-#' build the copula-based synthesiser. It evaluates the symbol provided by the
-#' client, optionally applies jittering and binning to satisfy disclosure
-#' control limits and finally fits a [`PUcopula::PUCopula`] model.
+#' build the Partition-of-Unity (PU) copula-based synthesiser. It evaluates the
+#' symbol provided by the client, optionally applies jittering and binning to
+#' satisfy disclosure control constraints, and fits a
+#' [`PUcopula::PUCopula`] model describing the dependence structure.
 #'
-#' @param data_str Character name of the server-side data object containing the
-#'   training data.
+#' This function represents the first step of the synthetic data generation
+#' workflow. The fitted copula can later be combined with separately estimated
+#' marginal distributions (see [estimateMarginalsDS()]) to simulate synthetic
+#' data.
+#'
+#' @param data_str Character name of the processed server-side training data
+#'   object.
 #' @param driver_strength_factor Numeric scalar or vector controlling the driver
 #'   strength passed to [`PUcopula::PUCopula()`]. Values between 0 and 1 are
 #'   interpreted as proportions of available rows.
@@ -267,10 +273,25 @@ rank_bin_smooth <- function(x, k) {
 #'   across variables.
 #' @param jitter Logical, numeric or named list controlling the amount of
 #'   numeric jittering applied to the input columns.
-#' @param family Character string passed to [`PUcopula::PUCopula()`] selecting
-#'   the driver distribution.
+#' @param family Character string selecting the driver distribution passed to
+#'   [`PUcopula::PUCopula()`].
 #'
-#' @return A fitted `PUCopula` object.
+#' @return A fitted [`PUcopula::PUCopula`] object representing the dependence
+#'   structure of the data.
+#'
+#' @details
+#' The function operates on server-side data within a DataSHIELD environment.
+#' Prior to fitting, optional smoothing (via `bin_size`) and perturbation (via
+#' `jitter`) can be applied to reduce disclosure risks.
+#'
+#' Only the copula model is estimated here. Marginal distributions must be
+#' fitted separately using [estimateMarginalsDS()]. Synthetic data can then be
+#' generated using [generateSyntheticDS()], optionally including privacy and
+#' utility scores.
+#'
+#' @seealso [estimateMarginalsDS()], [simulateCopulaDS()],
+#'   [generateSyntheticDS()], [PUcopula::PUCopula()]
+#'
 #' @export
 fitPUcopulaDS <- function(data_str, driver_strength_factor = 0.5, bin_size = 3, jitter = FALSE, family = "binom") {
   if (!requireNamespace("PUcopula", quietly = TRUE)) {

@@ -2,7 +2,7 @@
 % Please edit documentation in R/server_funs.R
 \name{fitPUcopulaDS}
 \alias{fitPUcopulaDS}
-\title{Fit the PUcopula model on the server side}
+\title{Fit the PU copula model on the server side}
 \usage{
 fitPUcopulaDS(
   data_str,
@@ -13,8 +13,8 @@ fitPUcopulaDS(
 )
 }
 \arguments{
-\item{data_str}{Character name of the server-side data object containing the
-training data.}
+\item{data_str}{Character name of the processed server-side training data
+object.}
 
 \item{driver_strength_factor}{Numeric scalar or vector controlling the driver
 strength passed to \code{\link[PUcopula:PUCopula-class]{PUcopula::PUCopula()}}. Values between 0 and 1 are
@@ -27,15 +27,36 @@ across variables.}
 \item{jitter}{Logical, numeric or named list controlling the amount of
 numeric jittering applied to the input columns.}
 
-\item{family}{Character string passed to \code{\link[PUcopula:PUCopula-class]{PUcopula::PUCopula()}} selecting
-the driver distribution.}
+\item{family}{Character string selecting the driver distribution passed to
+\code{\link[PUcopula:PUCopula-class]{PUcopula::PUCopula()}}.}
 }
 \value{
-A fitted \code{PUCopula} object.
+A fitted \code{\link[PUcopula:PUCopula-class]{PUcopula::PUCopula}} object representing the dependence
+structure of the data.
 }
 \description{
 \code{fitPUcopulaDS()} is the main server-side entry point used by DataSHIELD to
-build the copula-based synthesiser. It evaluates the symbol provided by the
-client, optionally applies jittering and binning to satisfy disclosure
-control limits and finally fits a \code{\link[PUcopula:PUCopula-class]{PUcopula::PUCopula}} model.
+build the Partition-of-Unity (PU) copula-based synthesiser. It evaluates the
+symbol provided by the client, optionally applies jittering and binning to
+satisfy disclosure control constraints, and fits a
+\code{\link[PUcopula:PUCopula-class]{PUcopula::PUCopula}} model describing the dependence structure.
+}
+\details{
+This function represents the first step of the synthetic data generation
+workflow. The fitted copula can later be combined with separately estimated
+marginal distributions (see \code{\link[=estimateMarginalsDS]{estimateMarginalsDS()}}) to simulate synthetic
+data.
+
+The function operates on server-side data within a DataSHIELD environment.
+Prior to fitting, optional smoothing (via \code{bin_size}) and perturbation (via
+\code{jitter}) can be applied to reduce disclosure risks.
+
+Only the copula model is estimated here. Marginal distributions must be
+fitted separately using \code{\link[=estimateMarginalsDS]{estimateMarginalsDS()}}. Synthetic data can then be
+generated using \code{\link[=generateSyntheticDS]{generateSyntheticDS()}}, optionally including privacy and
+utility scores.
+}
+\seealso{
+\code{\link[=estimateMarginalsDS]{estimateMarginalsDS()}}, \code{\link[=simulateCopulaDS]{simulateCopulaDS()}},
+\code{\link[=generateSyntheticDS]{generateSyntheticDS()}}, \code{\link[PUcopula:PUCopula-class]{PUcopula::PUCopula()}}
 }
