@@ -15,8 +15,8 @@ Description: Implements the server-side components required to generate
     package orchestrates the preprocessing, copula fitting, synthetic data
     generation and privacy scoring workflows by combining R and Python tooling.
 License: MIT + file LICENSE
-URL: https://github.com/your-org/dsPUcopula
-BugReports: https://github.com/your-org/dsPUcopula/issues
+URL: https://github.com/bips-hb/dsPUcopula
+BugReports: https://github.com/bips-hb/dsPUcopula/issues
 Depends:
     R (>= 4.1.0)
 Encoding: UTF-8
@@ -35,7 +35,7 @@ Imports:
 Remotes:
     amaendle/PUcopula
 Additional_repositories:
-    https://amaendle.r-universe.dev
+    https://bips-hb.r-universe.dev
 Config/reticulate:
   list(
     packages = list(
